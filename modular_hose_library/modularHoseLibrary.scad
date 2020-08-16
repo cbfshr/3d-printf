@@ -56,11 +56,12 @@ module roundedBox(size, radius, sidesonly) {
 DEFINITION = 128; // used for $fn (definition) parameter when generating curved surfaces
 
 // Tolerance - Distance between ball and socket surfaces (male/female connection)
-//TOLERANCE = 0.2; // Fits Loose
+//TOLERANCE = 0.2; // Fits Somewhat Loose
 TOLERANCE = 0.16; // Fits Snug
 
 // Modular Hose Shapes
 WAIST_OUTER_DIAMETER_MULTIPLIER = 1.58;
+mhSocketHeightScaleFactor = 1.26 + 0.39;
 
 // Fractions of an inch
 i1 = 25.4; // 25.4mm == 1in
@@ -69,48 +70,9 @@ i4 = i1 / 4;
 i8 = i1 / 8;
 i16 = i1 / 16;
 
-// --------------------------------
-// Discrete Elements, Non-Chainable
-// --------------------------------
-
-module modularHoseBall(mhBore) {
-  mhBallOD = mhBore * 2;
-  mhOffsetToBallCenter = 0.61 * mhBore;
-  mhOffsetToTopOfBall = 1.07 * mhBore;
-  mhWideBore = mhBore * 1.6; // started at 1.32
-  mhBallID = mhBore * 1.6;
-  mhOffsetToInnerBallCenter = 0.75 * mhBore;
-
-  difference() {
-    union() {
-      translate([0, 0, mhOffsetToBallCenter])
-        sphere(r = mhBallOD / 2, $fn = DEFINITION);
-    }
-
-    // Remove top of ball
-    translate([0, 0, mhOffsetToTopOfBall + mhBallOD / 2])
-      cube(size = [mhBallOD, mhBallOD, mhBallOD], center = true);
-  
-    // Remove bottom of ball
-    translate([0, 0, -mhBallOD / 2])
-      cube(size = [mhBallOD, mhBallOD, mhBallOD], center = true);
-
-    // hollow out the ball
-    translate([0, 0, -0.01])
-      cylinder(h = mhOffsetToTopOfBall + 0.02, r1 = mhBore / 2, r2 = mhWideBore / 2, $fn = DEFINITION);
-
-    // hollow out some more with a stretched sphere
-    translate([0, 0, mhOffsetToInnerBallCenter])
-      scale([1, 1, 1.2])
-      sphere(r = mhBallID / 2, $fn = DEFINITION);
-  }
-}
-
 // ----------------------------
 // Discrete Elements, Chainable
 // ----------------------------
-
-mhSocketHeightScaleFactor = 1.26 + 0.39;
 
 module modularHoseSocket(mhBore) {
   mhOffsetToSocketCenter = 0.31 * mhBore;
@@ -188,6 +150,43 @@ module modularHoseWaist(mhBore, mhWaistHeight) {
   }
 }
 
+// --------------------------------
+// Discrete Elements, Non-Chainable
+// --------------------------------
+
+module modularHoseBall(mhBore) {
+  mhBallOD = mhBore * 2;
+  mhOffsetToBallCenter = 0.61 * mhBore;
+  mhOffsetToTopOfBall = 1.07 * mhBore;
+  mhWideBore = mhBore * 1.6; // started at 1.32
+  mhBallID = mhBore * 1.6;
+  mhOffsetToInnerBallCenter = 0.75 * mhBore;
+
+  difference() {
+    union() {
+      translate([0, 0, mhOffsetToBallCenter])
+        sphere(r = mhBallOD / 2, $fn = DEFINITION);
+    }
+
+    // Remove top of ball
+    translate([0, 0, mhOffsetToTopOfBall + mhBallOD / 2])
+      cube(size = [mhBallOD, mhBallOD, mhBallOD], center = true);
+  
+    // Remove bottom of ball
+    translate([0, 0, -mhBallOD / 2])
+      cube(size = [mhBallOD, mhBallOD, mhBallOD], center = true);
+
+    // Hollow out the ball
+    translate([0, 0, -0.01])
+      cylinder(h = mhOffsetToTopOfBall + 0.02, r1 = mhBore / 2, r2 = mhWideBore / 2, $fn = DEFINITION);
+
+    // Hollow out some more with a stretched sphere
+    translate([0, 0, mhOffsetToInnerBallCenter])
+      scale([1, 1, 1.2])
+      sphere(r = mhBallID / 2, $fn = DEFINITION);
+  }
+}
+
 // Modular Hose -  Nozzle Tip
 module modularHoseRoundNozzleTip(mhBore, mhNozzleID) {
   mhWaistOD = WAIST_OUTER_DIAMETER_MULTIPLIER * mhBore;
@@ -196,14 +195,11 @@ module modularHoseRoundNozzleTip(mhBore, mhNozzleID) {
 
   difference() {
     union() {
-      if ($children > 0) {
-        translate([0, 0, mhNozzleHeight]) children(0);
-      }
-
+      // Outer Nozzle
       cylinder(h = mhNozzleHeight, r1 = mhWaistOD / 2, r2 = mhNozzleOD / 2, $fn = DEFINITION);
     }
 
-    // removeBore
+    // Remove Inner Bore
     translate([0, 0, -0.01])
       cylinder(
         h = mhNozzleHeight + 0.02, 
@@ -220,15 +216,11 @@ module modularHoseFlareNozzleTip(mhBore, mhNozzleWidth, mhNozzleThickness) {
 
   difference() {
     union() {
-      if ($children > 0) {
-        translate([0, 0, mhNozzleHeight * 2]) children(0);
-      }
-
       // Outer Nozzle
       cylinder(h = mhNozzleHeight, r1 = mhWaistOD / 2, r2 = mhNozzleWidth / 2, $fn = DEFINITION);
     }
 
-    // Inner Nozzle
+    // Remove Inner Bore
     translate([0, 0, -0.01])
       cylinder(
         h = mhNozzleHeight + 0.02, 
@@ -267,7 +259,6 @@ module modularHoseFlareNozzle(mhBore, mhNozzleWidth, mhNozzleThickness) {
   modularHoseSocket(mhBore)
     modularHoseFlareNozzleTip(mhBore, mhNozzleWidth, mhNozzleThickness);
 }
-
 
 // Modular Host - Base Plate
 module modularHoseBasePlate(mhBore, mhThreadDia = 3) {
@@ -310,30 +301,30 @@ module modularHoseDoubleSocket(mhBore) {
   }
 }
 
-// --------------------
+// ----------
 // Debug Code
 // - Shows a cross section through two "joined" hose segments with a 1mm "ruler" overlay
-// ---------------------
+// ----------
 
 debug = false;
 // Enable debug by uncommenting this line:
 //debug = true;
 
 if (debug) {
-  // top segment
+  // Top Segment
   difference() {
     translate([0, 0, 13.9]) modularHoseSegment(i4);
     translate([-10, 0, -1]) cube(size = [20, 20, 100]);
   }
 
-  // bottom segment
+  // Bottom Segment
   difference() {
     modularHoseSegment(i4);
     translate([-10, 0, -1])
       cube(size = [20, 20, 20]);
   }
 
-  // Show a ruler
+  // Show Ruler
   for (i = [-10 : 10]) {
     translate([i - 0.05, 0, 0])
       rotate([90, 0, 0])
