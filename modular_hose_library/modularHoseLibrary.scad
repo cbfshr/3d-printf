@@ -228,6 +228,45 @@ module modularHoseFlareNozzleTip(mhBore, mhNozzleWidth, mhNozzleThickness) {
   }
 }
 
+// Modular Hose - Flat Nozzle
+module modularHoseFlatNozzleTip(mhBore, mhNozzleWidth, mhNozzleThickness) {
+  mhWaistOD = WAIST_OUTER_DIAMETER_MULTIPLIER * mhBore;
+  mhNozzleHeight = 2 * mhBore;
+
+  difference() {
+    union() {
+      if ($children > 0) {
+        translate([0, 0, mhNozzleHeight * 2]) children(0);
+      }
+
+      difference() {
+        // Outer Flare Nozzle
+        hull() {
+          cylinder(h = mhNozzleHeight, r1 = mhWaistOD / 2, r2 = 0, $fn = DEFINITION);
+        
+          // TODO: fix this placement
+          translate([0, 0, mhNozzleHeight - 3 / 2])
+            cube([20, 5, 3], true);
+        }
+
+        // Inner Flare Nozzle
+        hull() {
+          translate([0, 0, -0.01])
+          cylinder(
+            h = mhNozzleHeight + 0.02, 
+            r1 = mhBore / 2,
+            r2 = 0,
+            $fn = DEFINITION);
+
+          // TODO: fix this placement
+          translate([0, 0, mhNozzleHeight - 3/2])
+            cube([19, 4, 3], true);
+        }
+      }
+    }
+  }
+}
+
 // -----------------------------------------------
 // Modular Hose Composite Elements (Non-Chainable)
 // -----------------------------------------------
@@ -256,6 +295,12 @@ module modularHoseRoundNozzle(mhBore, mhNozzleID) {
 module modularHoseFlareNozzle(mhBore, mhNozzleWidth, mhNozzleThickness) {
   modularHoseSocket(mhBore)
     modularHoseFlareNozzleTip(mhBore, mhNozzleWidth, mhNozzleThickness);
+}
+
+// Modular Hose - Flat Nozzle
+module modularHoseFlatNozzle(mhBore, mhNozzleWidth, mhNozzleThickness) {
+  modularHoseSocket(mhBore)
+    modularHoseFlatNozzleTip(mhBore, mhNozzleWidth, mhNozzleThickness);
 }
 
 // Modular Hose - Base Plate
@@ -355,6 +400,8 @@ if (examples) {
     modularHoseRoundNozzle(i4, i2);
     modularHoseRoundNozzle(i4, i8);
     modularHoseRoundNozzle(i4, i16);
+
+    modularHoseFlatNozzle(i4, i1, i2);
 
     // Segments
     modularHoseSegment(i4);
