@@ -70,10 +70,11 @@ i4 = i1 / 4;
 i8 = i1 / 8;
 i16 = i1 / 16;
 
-// ----------------------------
-// Discrete Elements, Chainable
-// ----------------------------
+// -----------------------
+// Modular Hose Components
+// -----------------------
 
+// Modular Hose - Socket (Female Connector)
 module modularHoseSocket(mhBore) {
   mhOffsetToSocketCenter = 0.31 * mhBore;
   mhOffsetToBaseOfSkirt = 0.39 * mhBore;
@@ -150,10 +151,7 @@ module modularHoseWaist(mhBore, mhWaistHeight) {
   }
 }
 
-// --------------------------------
-// Discrete Elements, Non-Chainable
-// --------------------------------
-
+// Modular Hose - Ball (Male Connector)
 module modularHoseBall(mhBore) {
   mhBallOD = mhBore * 2;
   mhOffsetToBallCenter = 0.61 * mhBore;
@@ -187,7 +185,7 @@ module modularHoseBall(mhBore) {
   }
 }
 
-// Modular Hose -  Nozzle Tip
+// Modular Hose - Nozzle Tip
 module modularHoseRoundNozzleTip(mhBore, mhNozzleID) {
   mhWaistOD = WAIST_OUTER_DIAMETER_MULTIPLIER * mhBore;
   mhNozzleHeight = 2 * mhBore;
@@ -230,9 +228,9 @@ module modularHoseFlareNozzleTip(mhBore, mhNozzleWidth, mhNozzleThickness) {
   }
 }
 
-// ---------------------------------
-// Composite Elements, Non-Chainable
-// ---------------------------------
+// -----------------------------------------------
+// Modular Hose Composite Elements (Non-Chainable)
+// -----------------------------------------------
 
 // Modular Hose - Normal segment with female (socket) and male (ball) ends
 module modularHoseSegment(mhBore) {
@@ -260,7 +258,7 @@ module modularHoseFlareNozzle(mhBore, mhNozzleWidth, mhNozzleThickness) {
     modularHoseFlareNozzleTip(mhBore, mhNozzleWidth, mhNozzleThickness);
 }
 
-// Modular Host - Base Plate
+// Modular Hose - Base Plate
 module modularHoseBasePlate(mhBore, mhThreadDia = 3) {
   mhWaistOD = WAIST_OUTER_DIAMETER_MULTIPLIER * mhBore;
   mhPlateHeight = 0.5 * mhBore;
@@ -337,7 +335,7 @@ if (debug) {
 // Example Usage of Composite Elements
 // -----------------------------------
 
-module evenlySpaceX(spacing) {
+module evenlySpace(spacing) {
   if ($children > 0) {
     gridxy = ceil(sqrt($children));
 
@@ -348,11 +346,11 @@ module evenlySpaceX(spacing) {
 }
 
 examples = false;
-// Enable examples by uncommenting this line:
-//examples = true;
+// Disnable examples by commenting out this line:
+examples = true;
 
 if (examples) {
-  evenlySpaceX(25) {
+  evenlySpace(25) {
     // Nozzles
     modularHoseRoundNozzle(i4, i2);
     modularHoseRoundNozzle(i4, i8);
