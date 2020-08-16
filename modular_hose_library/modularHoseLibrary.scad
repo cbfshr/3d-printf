@@ -69,6 +69,7 @@ i2 = i1 / 2;
 i4 = i1 / 4;
 i8 = i1 / 8;
 i16 = i1 / 16;
+i32 = i1 / 32;
 
 // -----------------------
 // Modular Hose Components
@@ -161,10 +162,8 @@ module modularHoseBall(mhBore) {
   mhOffsetToInnerBallCenter = 0.75 * mhBore;
 
   difference() {
-    union() {
-      translate([0, 0, mhOffsetToBallCenter])
-        sphere(r = mhBallOD / 2, $fn = DEFINITION);
-    }
+    translate([0, 0, mhOffsetToBallCenter])
+      sphere(r = mhBallOD / 2, $fn = DEFINITION);
 
     // Remove top of ball
     translate([0, 0, mhOffsetToTopOfBall + mhBallOD / 2])
@@ -192,10 +191,8 @@ module modularHoseRoundNozzleTip(mhBore, mhNozzleID) {
   mhNozzleOD = mhNozzleID + 1.2;
 
   difference() {
-    union() {
-      // Outer Nozzle
-      cylinder(h = mhNozzleHeight, r1 = mhWaistOD / 2, r2 = mhNozzleOD / 2, $fn = DEFINITION);
-    }
+    // Outer Nozzle
+    cylinder(h = mhNozzleHeight, r1 = mhWaistOD / 2, r2 = mhNozzleOD / 2, $fn = DEFINITION);
 
     // Remove Inner Bore
     translate([0, 0, -0.01])
@@ -213,10 +210,8 @@ module modularHoseFlareNozzleTip(mhBore, mhNozzleWidth, mhNozzleThickness) {
   mhNozzleHeight = 2 * mhBore;
 
   difference() {
-    union() {
-      // Outer Nozzle
-      cylinder(h = mhNozzleHeight, r1 = mhWaistOD / 2, r2 = mhNozzleWidth / 2, $fn = DEFINITION);
-    }
+    // Outer Nozzle
+    cylinder(h = mhNozzleHeight, r1 = mhWaistOD / 2, r2 = mhNozzleWidth / 2, $fn = DEFINITION);
 
     // Remove Inner Bore
     translate([0, 0, -0.01])
@@ -235,7 +230,7 @@ module modularHoseFlareNozzleTip(mhBore, mhNozzleWidth, mhNozzleThickness) {
 // - nozzleWidth - Width of the nozzle
 // - nozzleHeight - Height of the nozzle
 // - nozzleWallThickness - Thickness of the nozzle walls
-module modularHoseFlatNozzleTip(mhBore, nozzleLength, nozzleWidth, nozzleHeight, nozzleWallThickness = 1) {
+module modularHoseFlatNozzleTip(mhBore, nozzleLength, nozzleWidth, nozzleHeight, nozzleWallThickness) {
   mhWaistOD = WAIST_OUTER_DIAMETER_MULTIPLIER * mhBore;
 
   difference() {
@@ -391,7 +386,7 @@ module evenlySpace(spacing) {
 
 examples = false;
 // Disnable examples by commenting out this line:
-//examples = true;
+examples = true;
 
 if (examples) {
   evenlySpace(25) {
@@ -400,7 +395,7 @@ if (examples) {
     modularHoseRoundNozzle(i4, i8);
     modularHoseRoundNozzle(i4, i16);
 
-    modularHoseFlatNozzle(10, 30, 35, 8, 1);
+    modularHoseFlatNozzle(i4, i1, i1, i4, i32);
 
     // Segments
     modularHoseSegment(i4);
