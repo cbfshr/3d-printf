@@ -229,38 +229,37 @@ module modularHoseFlareNozzleTip(mhBore, mhNozzleWidth, mhNozzleThickness) {
 }
 
 // Modular Hose - Flat Nozzle
-module modularHoseFlatNozzleTip(mhBore, mhNozzleWidth, mhNozzleThickness) {
+// Parameters:
+// - mhBore - Inner diameter hole. Measurements are based off of this
+// - nozzleLength - Length of the nozzle
+// - nozzleWidth - Width of the nozzle
+// - nozzleHeight - Height of the nozzle
+// - nozzleWallThickness - Thickness of the nozzle walls
+module modularHoseFlatNozzleTip(mhBore, nozzleLength, nozzleWidth, nozzleHeight, nozzleWallThickness = 1) {
   mhWaistOD = WAIST_OUTER_DIAMETER_MULTIPLIER * mhBore;
-  mhNozzleHeight = 2 * mhBore;
 
   difference() {
     union() {
-      if ($children > 0) {
-        translate([0, 0, mhNozzleHeight * 2]) children(0);
-      }
-
       difference() {
-        // Outer Flare Nozzle
+        // Outer Flat Nozzle
         hull() {
-          cylinder(h = mhNozzleHeight, r1 = mhWaistOD / 2, r2 = 0, $fn = DEFINITION);
-        
-          // TODO: fix this placement
-          translate([0, 0, mhNozzleHeight - 3 / 2])
-            cube([20, 5, 3], true);
+          cylinder(h = nozzleLength, r1 = mhWaistOD / 2, r2 = 0, $fn = DEFINITION);
+
+          translate([0, 0, nozzleLength - 0.01])
+            cube([nozzleWidth, nozzleHeight, 0.01], true);
         }
 
-        // Inner Flare Nozzle
+        // Inner Flat Nozzle
         hull() {
           translate([0, 0, -0.01])
-          cylinder(
-            h = mhNozzleHeight + 0.02, 
-            r1 = mhBore / 2,
-            r2 = 0,
-            $fn = DEFINITION);
+            cylinder(
+              h = nozzleLength + 0.01, 
+              r1 = mhBore / 2,
+              r2 = 0,
+              $fn = DEFINITION);
 
-          // TODO: fix this placement
-          translate([0, 0, mhNozzleHeight - 3/2])
-            cube([19, 4, 3], true);
+          translate([0, 0, nozzleLength])
+            cube([nozzleWidth - nozzleWallThickness * 2, nozzleHeight - nozzleWallThickness * 2, 0.01], true);
         }
       }
     }
@@ -298,9 +297,9 @@ module modularHoseFlareNozzle(mhBore, mhNozzleWidth, mhNozzleThickness) {
 }
 
 // Modular Hose - Flat Nozzle
-module modularHoseFlatNozzle(mhBore, mhNozzleWidth, mhNozzleThickness) {
+module modularHoseFlatNozzle(mhBore, nozzleLength, nozzleWidth, nozzleHeight, nozzleWallThickness) {
   modularHoseSocket(mhBore)
-    modularHoseFlatNozzleTip(mhBore, mhNozzleWidth, mhNozzleThickness);
+    modularHoseFlatNozzleTip(mhBore, nozzleLength, nozzleWidth, nozzleHeight, nozzleWallThickness);
 }
 
 // Modular Hose - Base Plate
@@ -392,7 +391,7 @@ module evenlySpace(spacing) {
 
 examples = false;
 // Disnable examples by commenting out this line:
-examples = true;
+//examples = true;
 
 if (examples) {
   evenlySpace(25) {
@@ -401,7 +400,7 @@ if (examples) {
     modularHoseRoundNozzle(i4, i8);
     modularHoseRoundNozzle(i4, i16);
 
-    modularHoseFlatNozzle(i4, i1, i2);
+    modularHoseFlatNozzle(10, 30, 35, 8, 1);
 
     // Segments
     modularHoseSegment(i4);
