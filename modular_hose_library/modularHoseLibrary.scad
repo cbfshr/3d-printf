@@ -69,6 +69,7 @@ i2 = i1 / 2;
 i4 = i1 / 4;
 i8 = i1 / 8;
 i16 = i1 / 16;
+i32 = i1 / 32;
 
 // -----------------------
 // Modular Hose Components
@@ -161,10 +162,8 @@ module modularHoseBall(mhBore) {
   mhOffsetToInnerBallCenter = 0.75 * mhBore;
 
   difference() {
-    union() {
-      translate([0, 0, mhOffsetToBallCenter])
-        sphere(r = mhBallOD / 2, $fn = DEFINITION);
-    }
+    translate([0, 0, mhOffsetToBallCenter])
+      sphere(r = mhBallOD / 2, $fn = DEFINITION);
 
     // Remove top of ball
     translate([0, 0, mhOffsetToTopOfBall + mhBallOD / 2])
@@ -192,10 +191,8 @@ module modularHoseRoundNozzleTip(mhBore, mhNozzleID) {
   mhNozzleOD = mhNozzleID + 1.2;
 
   difference() {
-    union() {
-      // Outer Nozzle
-      cylinder(h = mhNozzleHeight, r1 = mhWaistOD / 2, r2 = mhNozzleOD / 2, $fn = DEFINITION);
-    }
+    // Outer Nozzle
+    cylinder(h = mhNozzleHeight, r1 = mhWaistOD / 2, r2 = mhNozzleOD / 2, $fn = DEFINITION);
 
     // Remove Inner Bore
     translate([0, 0, -0.01])
@@ -213,10 +210,8 @@ module modularHoseFlareNozzleTip(mhBore, mhNozzleWidth, mhNozzleThickness) {
   mhNozzleHeight = 2 * mhBore;
 
   difference() {
-    union() {
-      // Outer Nozzle
-      cylinder(h = mhNozzleHeight, r1 = mhWaistOD / 2, r2 = mhNozzleWidth / 2, $fn = DEFINITION);
-    }
+    // Outer Nozzle
+    cylinder(h = mhNozzleHeight, r1 = mhWaistOD / 2, r2 = mhNozzleWidth / 2, $fn = DEFINITION);
 
     // Remove Inner Bore
     translate([0, 0, -0.01])
@@ -225,6 +220,44 @@ module modularHoseFlareNozzleTip(mhBore, mhNozzleWidth, mhNozzleThickness) {
         r1 = mhBore / 2, 
         r2 = mhNozzleThickness / 2, 
         $fn = DEFINITION);
+  }
+}
+
+// Modular Hose - Flat Nozzle
+// Parameters:
+// - mhBore - Inner diameter hole. Measurements are based off of this
+// - nozzleLength - Length of the nozzle
+// - nozzleWidth - Width of the nozzle
+// - nozzleHeight - Height of the nozzle
+// - nozzleWallThickness - Thickness of the nozzle walls
+module modularHoseFlatNozzleTip(mhBore, nozzleLength, nozzleWidth, nozzleHeight, nozzleWallThickness) {
+  mhWaistOD = WAIST_OUTER_DIAMETER_MULTIPLIER * mhBore;
+
+  difference() {
+    union() {
+      difference() {
+        // Outer Flat Nozzle
+        hull() {
+          cylinder(h = nozzleLength, r1 = mhWaistOD / 2, r2 = 0, $fn = DEFINITION);
+
+          translate([0, 0, nozzleLength - 0.01])
+            cube([nozzleWidth, nozzleHeight, 0.01], true);
+        }
+
+        // Inner Flat Nozzle
+        hull() {
+          translate([0, 0, -0.01])
+            cylinder(
+              h = nozzleLength + 0.01, 
+              r1 = mhBore / 2,
+              r2 = 0,
+              $fn = DEFINITION);
+
+          translate([0, 0, nozzleLength])
+            cube([nozzleWidth - nozzleWallThickness * 2, nozzleHeight - nozzleWallThickness * 2, 0.01], true);
+        }
+      }
+    }
   }
 }
 
@@ -256,6 +289,12 @@ module modularHoseRoundNozzle(mhBore, mhNozzleID) {
 module modularHoseFlareNozzle(mhBore, mhNozzleWidth, mhNozzleThickness) {
   modularHoseSocket(mhBore)
     modularHoseFlareNozzleTip(mhBore, mhNozzleWidth, mhNozzleThickness);
+}
+
+// Modular Hose - Flat Nozzle
+module modularHoseFlatNozzle(mhBore, nozzleLength, nozzleWidth, nozzleHeight, nozzleWallThickness) {
+  modularHoseSocket(mhBore)
+    modularHoseFlatNozzleTip(mhBore, nozzleLength, nozzleWidth, nozzleHeight, nozzleWallThickness);
 }
 
 // Modular Hose - Base Plate
@@ -355,6 +394,8 @@ if (examples) {
     modularHoseRoundNozzle(i4, i2);
     modularHoseRoundNozzle(i4, i8);
     modularHoseRoundNozzle(i4, i16);
+
+    modularHoseFlatNozzle(i4, i1, i1, i4, i32);
 
     // Segments
     modularHoseSegment(i4);
