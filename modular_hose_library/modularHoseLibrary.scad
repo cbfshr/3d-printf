@@ -133,21 +133,23 @@ module modularHoseSocket(mhBore) {
 }
 
 // Modular Hose - Waist (Middle, Connecting Part)
-module modularHoseWaist(mhBore, mhWaistHeight) {
+module modularHoseWaist(mhBore, waistHeight) {
+  assert(waistHeight >= 0);
+
   mhWaistOD = WAIST_OUTER_DIAMETER_MULTIPLIER * mhBore;
 
   union() {
     if ($children > 0) {
-      translate([0, 0, mhWaistHeight]) children(0);
+      translate([0, 0, waistHeight]) children(0);
     }
 
     difference() {
       translate([0, 0, -0.01])
-        cylinder(h = mhWaistHeight + 0.02, r = mhWaistOD / 2, $fn = DEFINITION);
+        cylinder(h = waistHeight + 0.02, r = mhWaistOD / 2, $fn = DEFINITION);
 
       // Remove Bore
       translate([0, 0, -1])
-        cylinder(h = mhWaistHeight + 2, r = mhBore / 2, $fn = DEFINITION);
+        cylinder(h = waistHeight + 2, r = mhBore / 2, $fn = DEFINITION);
     }
   }
 }
@@ -181,6 +183,53 @@ module modularHoseBall(mhBore) {
     translate([0, 0, mhOffsetToInnerBallCenter])
       scale([1, 1, 1.2])
       sphere(r = mhBallID / 2, $fn = DEFINITION);
+  }
+}
+
+// Modular Hose - Multi Ball (Male Connector)
+module modularHoseMultiBall(mhBore, numberOfBalls, secondaryWaistHeight = 10) {
+  mhBallOD = mhBore * 2;
+  mhOffsetToBallCenter = 0.61 * mhBore;
+  mhOffsetToTopOfBall = 1.07 * mhBore;
+  mhWideBore = mhBore * 1.6; // started at 1.32
+  mhBallID = mhBore * 1.6;
+  mhOffsetToInnerBallCenter = 0.75 * mhBore;
+  mhWaistOD = WAIST_OUTER_DIAMETER_MULTIPLIER * mhBore;
+  
+  xRotation = 45;
+
+  union() {
+    assert(numberOfBalls == 2 || numberOfBalls == 3);
+    zRotation = 360 / numberOfBalls;
+
+    difference() {
+      for (i = [0:numberOfBalls - 1]) {
+        rotate(a=[0, xRotation, zRotation * i])
+          translate([0, 0, secondaryWaistHeight])
+          modularHoseBall(mhBore);
+
+        // Outer
+        hull() {
+          cylinder(h = 0.01, r1 = mhWaistOD / 2, r2 = mhWaistOD / 2, $fn = DEFINITION);
+
+          rotate(a=[0, xRotation, zRotation * i])
+            translate([0, 0, secondaryWaistHeight])
+            cylinder(h = 0.01, r1 = mhWaistOD / 2, r2 = mhWaistOD / 2, $fn = DEFINITION);
+        }
+      }
+
+      for (i = [0:numberOfBalls - 1]) {
+        // Inner
+        hull() {
+          translate([0, 0, -0.01])
+            cylinder(h = 0.01, r = mhBore / 2, $fn = DEFINITION);
+
+          rotate(a=[0, xRotation, zRotation * i])
+            translate([0, 0, secondaryWaistHeight])
+            cylinder(h = 0 + 0.02, r1 = mhBore / 2, r2 = mhBore / 2, $fn = DEFINITION);
+        }
+      }
+    }
   }
 }
 
@@ -266,17 +315,16 @@ module modularHoseFlatNozzleTip(mhBore, nozzleLength, nozzleWidth, nozzleHeight,
 // -----------------------------------------------
 
 // Modular Hose - Normal segment with female (socket) and male (ball) ends
-module modularHoseSegment(mhBore) {
+module modularHoseSegment(mhBore, waistHeight = 0, numberOfBalls = 1, secondaryWaistHeight = 10) {
   modularHoseSocket(mhBore)
-    modularHoseWaist(mhBore, 0.24 * mhBore)
-    modularHoseBall(mhBore);
-}
-
-// Modular Hose - Extended Segment
-module modularHoseExtendedSegment(mhBore, mhWaistHeight) {
-  modularHoseSocket(mhBore)
-    modularHoseWaist(mhBore, mhWaistHeight)
-    modularHoseBall(mhBore);
+    modularHoseWaist(mhBore, waistHeight)
+    if (numberOfBalls == 1) {
+      modularHoseBall(mhBore);
+    } else if (numberOfBalls == 2 || numberOfBalls == 3) {
+      modularHoseMultiBall(mhBore, numberOfBalls, secondaryWaistHeight);
+    } else {
+      echo("This number of balls is not supported: ", numberOfBalls);
+    }
 }
 
 // Modular Hose - Round Nozzle
@@ -385,8 +433,8 @@ module evenlySpace(spacing) {
 }
 
 examples = false;
-// Disnable examples by commenting out this line:
-examples = true;
+// Disable examples by commenting out this line:
+//examples = true;
 
 if (examples) {
   evenlySpace(25) {
@@ -394,17 +442,19 @@ if (examples) {
     modularHoseRoundNozzle(i4, i2);
     modularHoseRoundNozzle(i4, i8);
     modularHoseRoundNozzle(i4, i16);
-
     modularHoseFlatNozzle(i4, i1, i1, i4, i32);
 
     // Segments
     modularHoseSegment(i4);
-    modularHoseExtendedSegment(i4, 20);
+    modularHoseSegment(i4, numberOfBalls = 2);
+    modularHoseSegment(i4, numberOfBalls = 3);
+    modularHoseSegment(i4, 10, 2, 20);
+    modularHoseSegment(i4, 20);
 
     // Special Sockets
     modularHoseBasePlate(i4);
     modularHoseDoubleSocket(i4);
   }
 } else {
-  modularHoseSegment(i4);
+  modularHoseSegment(10, 5, 2, 15);
 }
